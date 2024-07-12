@@ -1,0 +1,1 @@
+{"package": {"0": {"min_watt": 0.0, "max_watt": 11.38915402298852, "#unit": 1}}, "core": {"0": {"min_watt": 0.0, "max_watt": 0.0, "#unit": 2}}, "uncore": {"0": {"min_watt": 0.0, "max_watt": 0.0, "#unit": 1}}, "dram": {"0": {"min_watt": 0.0, "max_watt": 4.8065931034482805, "#unit": 1}}}

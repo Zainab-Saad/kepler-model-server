@@ -5,7 +5,7 @@ kind: Kustomization
 images:
 - name: kepler_model_server
   newName: quay.io/sustainable_computing_io/kepler_model_server
-  newTag: latest
+  newTag: v0.7
 
 patchesStrategicMerge:
 - ./patch/patch-estimator-sidecar.yaml

@@ -130,6 +130,7 @@ arguments:
 def validate(args):
     response_filename = args.input
     response = load_json(data_path, response_filename)
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!THE RESPONSE IS!!!!!!!!!!!!!!!!!! ", response)
     validate_df = get_validate_df(data_path, args.benchmark, response)
     summary_validation(validate_df)
     if args.output:
