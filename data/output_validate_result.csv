@@ -20,5 +20,5 @@
 18,,intel_rapl,kepler_node_uncore_joules_total,0,0,0.0
 19,,intel_rapl,kepler_node_dram_joules_total,0,0,0.0
 20,,acpi,kepler_node_platform_joules_total,0,0,0.0
-21,benchmark.json,,kepler_exporter_build_info,601,601,1.0
-22,benchmark.json,,kepler_node_info,601,601,1.0
+21,benchmark.json,,kepler_exporter_build_info,2401,2401,1.0
+22,benchmark.json,,kepler_node_info,2401,2401,1.0
