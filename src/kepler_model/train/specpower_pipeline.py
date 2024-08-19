@@ -67,7 +67,7 @@ def get_machine_spec(df):
 
 
 class SpecPipelineRun:
-    def __init__(self, name, abs_trainer_names=default_trainer_names, dyn_trainer_names=default_trainer_names, isolator=MinIdleIsolator()):
+    def __init__(self, name, abs_trainer_names=['XgboostFitTrainer'], dyn_trainer_names=['XgboostFitTrainer'], isolator=MinIdleIsolator()):
         self.feature_group = FeatureGroup.BPFOnly
         self.power_labels = [acpi_label]
         self.energy_source = platform_energy_source

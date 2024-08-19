@@ -160,7 +160,7 @@ class Trainer(metaclass=ABCMeta):
             if self.should_archive(node_type):
                 pipeline_lock.acquire()
                 try:
-                    self.save_model_and_metadata(node_type, X_test_map, y_test_map)
+                    self.save_model_and_metadata(node_type, X_train, X_test_map, y_test_map)
                 except Exception as err:
                     self.print_log("failed to save model {}: {}".format(node_type, err))
                 finally:
@@ -197,7 +197,7 @@ class Trainer(metaclass=ABCMeta):
                 y_values += unit_y_values
         return X_values, y_values
 
-    def save_metadata(self, node_type, mae, mae_map, mape, mape_map, item):
+    def save_metadata(self, node_type, mae, mae_map, mape, mape_map, item, train_dataset_size=-1, test_dataset_size=-1):
         save_path = self._get_save_path(node_type)
         model_name, model_file = self._model_filename(node_type)
         item["model_name"] = model_name
@@ -210,6 +210,8 @@ class Trainer(metaclass=ABCMeta):
         item["mape"] = mape
         item.update(mae_map)
         item.update(mape_map)
+        item["train_dataset_size"] = train_dataset_size
+        item["test_dataset_size"] = test_dataset_size
         self.metadata = item
         save_metadata(save_path, item)
 
@@ -227,7 +229,7 @@ class Trainer(metaclass=ABCMeta):
     def save_scaler(self, save_path, node_type):
         return save_scaler(save_path, self.node_scalers[node_type])
 
-    def save_model_and_metadata(self, node_type, X_test_map, y_test_map):
+    def save_model_and_metadata(self, node_type, X_train, X_test_map, y_test_map):
         save_path = self._get_save_path(node_type)
         scaler_filename = self.save_scaler(save_path, node_type)
 
@@ -257,7 +259,7 @@ class Trainer(metaclass=ABCMeta):
                 max_mape = mape
             mae_map["{}_mae".format(component)] = mae
             mape_map["{}_mape".format(component)] = mape
-        self.save_metadata(node_type, max_mae, mae_map, mape, mape_map, item)
+        self.save_metadata(node_type, max_mae, mae_map, mape, mape_map, item, len(X_train), len(X_test_map[component]))
         # archive model
         self.archive_model(node_type)
         print("save model to {}".format(save_path))
