@@ -217,7 +217,6 @@ class Trainer(metaclass=ABCMeta):
                       mse, mse_map, rmse, rmse_map, r2, r2_map,
                       item,
                       train_dataset_size=-1, test_dataset_size=-1):
-        print('====================================================================== in save_metadata()')
         save_path = self._get_save_path(node_type)
         model_name, model_file = self._model_filename(node_type)
         item['model_name'] = model_name
@@ -239,7 +238,6 @@ class Trainer(metaclass=ABCMeta):
         item["train_dataset_size"] = train_dataset_size
         item["test_dataset_size"] = test_dataset_size
         self.metadata = item
-        print('=============================================================item', item)
         save_metadata(save_path, item)
 
     def archive_model(self, node_type):
