@@ -104,6 +104,18 @@ class Trainer(metaclass=ABCMeta):
     @abstractmethod
     def get_mape(self, node_type, component, X_test, y_test):
         return NotImplemented
+    
+    @abstractmethod
+    def get_r2_score(self, node_type, component, X_test, y_test):
+        return NotImplemented
+
+    @abstractmethod
+    def get_mse(self, node_type, component, X_test, y_test):
+        return NotImplemented
+
+    @abstractmethod
+    def get_rmse(self, node_type, component, X_test, y_test):
+        return NotImplemented
 
     @abstractmethod
     def get_weight_dict(self, node_type):
@@ -128,43 +140,47 @@ class Trainer(metaclass=ABCMeta):
                 feature_index = main_feature(self.feature_group_name, component)
                 self.node_models[node_type][component].set_feature_index(feature_index)
 
+
     def process(self, data, power_labels, pipeline_lock):
         node_types = pd.unique(data[node_info_column])
         for node_type in node_types:
             node_type = int(node_type)
-            save_path = self._get_save_path(str(node_type))
-            self.node_scalers[node_type] = load_scaler(save_path)
-            self.load_model(node_type)
-
-            node_type_filtered_data = data[data[node_info_column] == node_type]
-            if self.node_scalers[node_type] is None:
-                self.print_log("fit scaler to latest data {1} for node_type={0}".format(node_type, self.feature_group_name))
-                # no profiled scaler
-                x_values = node_type_filtered_data[self.features].values
-                self.node_scalers[node_type] = MaxAbsScaler()
-                self.node_scalers[node_type].fit(x_values)
-
-            X_test_map = dict()
-            y_test_map = dict()
-            try:
-                for component in self.energy_components:
-                    X_values, y_values = self.apply_ratio(component, node_type_filtered_data, power_labels)
-                    X_train, X_test, y_train, y_test = normalize_and_split(X_values, y_values, scaler=self.node_scalers[node_type])
-                    X_test_map[component] = X_test
-                    y_test_map[component] = y_test
-                    self.train(node_type, component, X_train, y_train)
-                    self.save_checkpoint(self.node_models[node_type][component], self._checkpoint_filepath(component, node_type))
-            except Exception as err:
-                self.print_log("failed to process {}: {}".format(node_type, err))
-                continue
-            if self.should_archive(node_type):
-                pipeline_lock.acquire()
+            # TODO: remove this if statement, it is just for testing
+            # set it to 0 for testing client.py; and to 86 for testing specpower_trainer_client_machine.py
+            if node_type == 86:
+                save_path = self._get_save_path(str(node_type))
+                self.node_scalers[node_type] = load_scaler(save_path)
+                self.load_model(node_type)
+                
+                node_type_filtered_data = data[data[node_info_column] == node_type]
+                if self.node_scalers[node_type] is None:
+                    self.print_log("fit scaler to latest data {1} for node_type={0}".format(node_type, self.feature_group_name))
+                    # no profiled scaler
+                    x_values = node_type_filtered_data[self.features].values
+                    self.node_scalers[node_type] = MaxAbsScaler()
+                    self.node_scalers[node_type].fit(x_values)
+                
+                X_test_map = dict()
+                y_test_map = dict()
                 try:
-                    self.save_model_and_metadata(node_type, X_train, X_test_map, y_test_map)
+                    for component in self.energy_components:
+                        X_values, y_values = self.apply_ratio(component, node_type_filtered_data, power_labels)
+                        X_train, X_test, y_train, y_test = normalize_and_split(X_values, y_values, scaler=self.node_scalers[node_type])
+                        X_test_map[component] = X_test
+                        y_test_map[component] = y_test
+                        self.train(node_type, component, X_train, y_train)
+                        self.save_checkpoint(self.node_models[node_type][component], self._checkpoint_filepath(component, node_type))
                 except Exception as err:
-                    self.print_log("failed to save model {}: {}".format(node_type, err))
-                finally:
-                    pipeline_lock.release()
+                    self.print_log("failed to process {}: {}".format(node_type, err))
+                    continue
+                if self.should_archive(node_type):
+                    pipeline_lock.acquire()
+                    try:
+                        self.save_model_and_metadata(node_type, X_train, X_test_map, y_test_map)
+                    except Exception as err:
+                        self.print_log("failed to save model {}: {}".format(node_type, err))
+                    finally:
+                        pipeline_lock.release()
 
     def apply_ratio(self, component, node_type_filtered_data, power_labels):
         power_label = component_to_col(component)
@@ -197,22 +213,33 @@ class Trainer(metaclass=ABCMeta):
                 y_values += unit_y_values
         return X_values, y_values
 
-    def save_metadata(self, node_type, mae, mae_map, mape, mape_map, item, train_dataset_size=-1, test_dataset_size=-1):
+    def save_metadata(self, node_type, mae, mae_map, mape, mape_map,
+                      mse, mse_map, rmse, rmse_map, r2, r2_map,
+                      item,
+                      train_dataset_size=-1, test_dataset_size=-1):
+        print('====================================================================== in save_metadata()')
         save_path = self._get_save_path(node_type)
         model_name, model_file = self._model_filename(node_type)
-        item["model_name"] = model_name
-        item["model_class"] = self.model_class
-        item["model_file"] = model_file
-        item["features"] = self.features
-        item["fe_files"] = [] if not hasattr(self, "fe_files") else self.fe_files
-        item["output_type"] = self.output_type.name
-        item["mae"] = mae
-        item["mape"] = mape
+        item['model_name'] = model_name
+        item['model_class'] = self.model_class
+        item['model_file'] = model_file
+        item['features']= self.features
+        item['fe_files'] = [] if not hasattr(self, 'fe_files') else self.fe_files
+        item['output_type'] = self.output_type.name
+        item['mae'] = mae
+        item['mape'] = mape
+        item['mse'] = mse
+        item['rmse'] = rmse
+        item['r2'] = r2
         item.update(mae_map)
         item.update(mape_map)
+        item.update(mse_map)
+        item.update(rmse_map)
+        item.update(r2_map)
         item["train_dataset_size"] = train_dataset_size
         item["test_dataset_size"] = test_dataset_size
         self.metadata = item
+        print('=============================================================item', item)
         save_metadata(save_path, item)
 
     def archive_model(self, node_type):
@@ -237,7 +264,11 @@ class Trainer(metaclass=ABCMeta):
         model_dict = dict()
         for component in self.energy_components:
             component_save_file = self.component_model_filename(component)
-            model_dict[component] = {"model_file": component_save_file, "features": self.features, "fe_files": [scaler_filename] + ([] if not hasattr(self, "fe_files") else self.fe_files)}
+            model_dict[component] = {
+                'model_file': component_save_file,
+                'features': self.features,
+                'fe_files': [scaler_filename] + ([] if not hasattr(self, 'fe_files') else self.fe_files)
+            }
             # save component model
             self.save_model(save_path, node_type, component)
         # save model dict
@@ -245,21 +276,43 @@ class Trainer(metaclass=ABCMeta):
         # save metadata
         max_mae = None
         max_mape = None
+        max_mse = None
+        max_rmse = None
+        min_r2 = None
+
         mae_map = dict()
         mape_map = dict()
+        mse_map = dict()
+        rmse_map = dict()
+        r2_map = dict()
         item = self.get_basic_metadata(node_type)
         for component in self.energy_components:
             mae = self.get_mae(node_type, component, X_test_map[component], y_test_map[component])
             mae = round(mae, 2)
             mape = self.get_mape(node_type, component, X_test_map[component], y_test_map[component])
             mape = round(mape, 2)
+            mse = self.get_mse(node_type, component, X_test_map[component], y_test_map[component])
+            rmse = self.get_rmse(node_type, component, X_test_map[component], y_test_map[component])
+            r2 = self.get_r2_score(node_type, component, X_test_map[component], y_test_map[component])
             if max_mae is None or mae > max_mae:
                 max_mae = mae
             if max_mape is None or mape > max_mape:
                 max_mape = mape
+            if max_mse is None or mse > max_mse:
+                max_mse = mse
+            if max_rmse is None or rmse > max_rmse:
+                max_rmse = rmse
+            if min_r2 is None or r2 < min_r2:
+                min_r2 = r2
             mae_map["{}_mae".format(component)] = mae
             mape_map["{}_mape".format(component)] = mape
-        self.save_metadata(node_type, max_mae, mae_map, mape, mape_map, item, len(X_train), len(X_test_map[component]))
+            mse_map["{}_mse".format(component)] = mse
+            rmse_map["{}_rmse".format(component)] = rmse
+            r2_map["{}_r2".format(component)] = r2
+
+        self.save_metadata(node_type, max_mae, mae_map, mape, mape_map,
+                           mse, mse_map, rmse, rmse_map, r2, r2_map,
+                           item, len(X_train), len(X_test_map[component]))
         # archive model
         self.archive_model(node_type)
         print("save model to {}".format(save_path))

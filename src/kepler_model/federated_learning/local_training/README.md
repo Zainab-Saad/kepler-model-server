@@ -1,0 +1,1 @@
+This is a prototype for training model locally on each machine of a given node type for benchmarking with centralized and federated learning

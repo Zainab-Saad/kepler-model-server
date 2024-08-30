@@ -1,6 +1,6 @@
 import argparse
 
-from fl_utils import (
+from .fl_utils import (
     prom_output_path,
     prom_output_filename
 )
@@ -26,6 +26,11 @@ parser.add_argument(
 )
 parser.add_argument(
     "--node_type",
-    type=str,
+    type=int,
     help="For specpower training; Node type on which this client local model is trained"
+)
+parser.add_argument(
+    "--client",
+    type=int,
+    help="For specpower training; the client number for quick prototyping: TODO (change it to more meaningful argument)"
 )

@@ -1,8 +1,9 @@
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import os
 import xgboost as xgb
 import numpy as np
 import base64
+import math
 
 from kepler_model.util import save_pkl, load_pkl
 from abc import abstractmethod
@@ -84,6 +85,22 @@ class XgboostTrainer(Trainer):
         absolute_percentage_errors = np.abs((non_zero_y_test - non_zero_predicted_values) / non_zero_y_test) * 100
         mape = np.mean(absolute_percentage_errors)
         return mape
+    
+    def get_mse(self, node_type, component, X_test, y_test):
+        predicted_values = self.predict(node_type, component, X_test, skip_preprocess=True)
+        mse = mean_squared_error(y_test, predicted_values)
+        return mse
+
+    def get_rmse(self, node_type, component, X_test, y_test):
+        predicted_values = self.predict(node_type, component, X_test, skip_preprocess=True)
+        mse = mean_squared_error(y_test, predicted_values)
+        rmse = math.sqrt(mse)
+        return rmse
+
+    def get_r2_score(self, node_type, component, X_test, y_test):
+        predicted_values = self.predict(node_type, component, X_test, skip_preprocess=True)
+        r2 = r2_score(y_test, predicted_values)
+        return r2
 
     def save_model(self, component_save_path, node_type, component):
         model = self.node_models[node_type][component]

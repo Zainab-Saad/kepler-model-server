@@ -28,6 +28,15 @@ platform_energy_source = "acpi"
 acpi_component = PowerSourceMap[platform_energy_source][0]
 acpi_label = component_to_col(acpi_component)
 
+import sys, os
+
+# Disable
+def blockPrint():
+    sys.stdout = open(os.devnull, 'w')
+
+# Restore
+def enablePrint():
+    sys.stdout = sys.__stdout__
 
 def read_csv_from_url(topurl, path):
     response = requests.get(os.path.join(topurl, path))
@@ -91,9 +100,113 @@ class SpecPipelineRun:
                     spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES]
             self.pipeline.node_collection.save()
         return spec_extracted_data
+    
+    def load_spec_machine_data(self, client_no, node_type, spec_db_url):
+        spec_extracted_data = dict()
+        # load index.json
+        file_indexes = read_json_from_url(spec_db_url, "index.json")
+        if file_indexes is not None:
+            client_counter = 1
+            for filename in file_indexes:
+                machine_id, _ = os.path.splitext(filename)
+                df = read_csv_from_url(spec_db_url, filename)
+                if df is not None: 
+                    # find node_type
+                    spec = get_machine_spec(df)
+                    node_type_ = self.pipeline.node_collection.index_train_machine(machine_id, spec)
+                    if node_type_ != node_type:
+                        continue
+                    if client_counter != client_no:
+                        client_counter += 1
+                        continue
+                    df[node_info_column] = node_type_
+                    # select only needed column
+                    spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    client_counter += 1
+                    break
+            self.pipeline.node_collection.save()
+        return spec_extracted_data
+
+    # use this function when testing with multiple specpower clients
+    def load_spec_machine_data_grouped(self, client_no, node_type, spec_db_url):
+        spec_extracted_data = dict()
+        # load index.json
+        file_indexes = read_json_from_url(spec_db_url, "index.json")
+        if file_indexes is not None:
+            client_counter = 1
+            for filename in file_indexes:
+                machine_id, _ = os.path.splitext(filename)
+                df = read_csv_from_url(spec_db_url, filename)
+                if df is not None: 
+                    # find node_type
+                    spec = get_machine_spec(df)
+                    node_type_ = self.pipeline.node_collection.index_train_machine(machine_id, spec)
+                    if node_type_ != node_type:
+                        continue
+                    if client_no == 1:
+                        if client_counter >= 1 and client_counter <= 11:
+                            df[node_info_column] = node_type_
+                            # select only needed column
+                            spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    if client_no == 2:
+                        if client_counter >= 12 and client_counter <= 22:
+                            df[node_info_column] = node_type_
+                            # select only needed column
+                            spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    if client_no == 3:
+                        if client_counter >= 23 and client_counter <= 33:
+                            df[node_info_column] = node_type_
+                            # select only needed column
+                            spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 4:
+                    #     if client_counter >= 10 and client_counter <= 12:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 5:
+                    #     if client_counter >= 13 and client_counter <= 15:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 6:
+                    #     if client_counter >= 16 and client_counter <= 18:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 7:
+                    #     if client_counter >= 19 and client_counter <= 21:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 8:
+                    #     if client_counter >= 22 and client_counter <= 24:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 9:
+                    #     if client_counter >= 25 and client_counter <= 27:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 10:
+                    #     if client_counter >= 28 and client_counter <= 30:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 11:
+                    #     if client_counter >= 31 and client_counter <= 33:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    client_counter += 1
+            self.pipeline.node_collection.save()
+        return spec_extracted_data
+
 
     def process(self, spec_db_url):
+        blockPrint()
         spec_extracted_data = self.load_spec_data(spec_db_url)
+        enablePrint()
         abs_data = pd.concat(spec_extracted_data.values(), ignore_index=True)
         df_list = []
         for df in spec_extracted_data.values():
@@ -114,7 +227,7 @@ class SpecPipelineRun:
 
 if __name__ == "__main__":
     spec_db_url = "http://localhost:8080"
-    pipeline_name = "specpower-0.7.11"
+    pipeline_name = "specpower_86"
     pipelinerun = SpecPipelineRun(name=pipeline_name)
     _, abs_data, dyn_data = pipelinerun.process(spec_db_url)
     pipelinerun.save_metadata()
