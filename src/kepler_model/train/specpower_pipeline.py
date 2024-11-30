@@ -158,28 +158,33 @@ class SpecPipelineRun:
                             df[node_info_column] = node_type_
                             # select only needed column
                             spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
+                    # if client_no == 3:
+                    #     if client_counter >= 21 and client_counter <= 30:
+                    #         df[node_info_column] = node_type_
+                    #         # select only needed column
+                    #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
                     # if client_no == 4:
-                    #     if client_counter >= 10 and client_counter <= 12:
+                    #     if client_counter >= 19 and client_counter <= 24:
                     #         df[node_info_column] = node_type_
                     #         # select only needed column
                     #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
                     # if client_no == 5:
-                    #     if client_counter >= 13 and client_counter <= 15:
+                    #     if client_counter >= 25 and client_counter <= 30:
                     #         df[node_info_column] = node_type_
                     #         # select only needed column
                     #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
                     # if client_no == 6:
-                    #     if client_counter >= 16 and client_counter <= 18:
+                    #     if client_counter >= 21 and client_counter <= 24:
                     #         df[node_info_column] = node_type_
                     #         # select only needed column
                     #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
                     # if client_no == 7:
-                    #     if client_counter >= 19 and client_counter <= 21:
+                    #     if client_counter >= 25 and client_counter <= 28:
                     #         df[node_info_column] = node_type_
                     #         # select only needed column
                     #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
                     # if client_no == 8:
-                    #     if client_counter >= 22 and client_counter <= 24:
+                    #     if client_counter >= 29 and client_counter <= 32:
                     #         df[node_info_column] = node_type_
                     #         # select only needed column
                     #         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]

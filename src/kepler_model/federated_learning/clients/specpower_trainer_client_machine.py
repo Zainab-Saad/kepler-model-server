@@ -76,7 +76,7 @@ def init_specpower_client():
     pipelinerun = SpecPipelineRun(args.pipeline_name)
     blockPrint()
     # spec_extracted_data = pipelinerun.load_spec_machine_data(client_no, node_type, SPEC_DB_URL)
-    spec_extracted_data = pipelinerun.load_spec_machine_data_grouped(client_no, node_type, SPEC_DB_URL)
+    spec_extracted_data = pipelinerun.load_spec_machine_data(client_no, node_type, SPEC_DB_URL)
     enablePrint()
     # valid_feature_groups = get_valid_feature_group_from_queries(spec_extracted_data.keys())
     client = SpecPowerTrainerClient(spec_extracted_data, args.pipeline_name,
