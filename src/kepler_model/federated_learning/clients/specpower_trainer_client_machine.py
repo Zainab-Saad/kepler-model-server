@@ -39,6 +39,9 @@ args = parser.parse_args()
 
 feature_group_test = "BPFOnly"
 
+pd.set_option('display.max_rows', None)  
+pd.set_option('display.max_columns', None)  
+
 # this class overrides the KeplerClient train() method to train on individual node type data on each client
 class SpecPowerTrainerClient(KeplerClient):
     def __init__(self, query_results, pipeline_name, node_type, abs_trainer_names=[TRAINER_NAME],
@@ -76,7 +79,7 @@ def init_specpower_client():
     pipelinerun = SpecPipelineRun(args.pipeline_name)
     blockPrint()
     # spec_extracted_data = pipelinerun.load_spec_machine_data(client_no, node_type, SPEC_DB_URL)
-    spec_extracted_data = pipelinerun.load_spec_machine_data(client_no, node_type, SPEC_DB_URL)
+    spec_extracted_data = pipelinerun.load_spec_machine_data_grouped(client_no, node_type, SPEC_DB_URL)
     enablePrint()
     # valid_feature_groups = get_valid_feature_group_from_queries(spec_extracted_data.keys())
     client = SpecPowerTrainerClient(spec_extracted_data, args.pipeline_name,
