@@ -23,7 +23,8 @@ from .constants import (
     ARGUMENT_ASSERTION_ERROR,
     ARGUMENT_PIPELINE_NAME,
     ARGUMENT_NODE_TYPE,
-    ARGUMENT_CLIENT
+    ARGUMENT_CLIENT, 
+    ARGUMENT_NUM_CLIENTS
 )
 
 from kepler_model.util.loader import load_json

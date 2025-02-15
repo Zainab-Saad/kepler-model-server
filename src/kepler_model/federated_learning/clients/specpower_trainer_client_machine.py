@@ -30,7 +30,8 @@ from kepler_model.federated_learning.util.fl_utils import (
     ARGUMENT_ASSERTION_ERROR,
     ARGUMENT_PIPELINE_NAME,
     ARGUMENT_NODE_TYPE,
-    ARGUMENT_CLIENT
+    ARGUMENT_CLIENT,
+    ARGUMENT_NUM_CLIENTS
 )
 
 from kepler_model.federated_learning.clients.client import KeplerClient
@@ -74,12 +75,14 @@ def init_specpower_client():
     assert args.pipeline_name, ARGUMENT_ASSERTION_ERROR.format(ARGUMENT_PIPELINE_NAME)
     assert args.node_type, ARGUMENT_ASSERTION_ERROR.format(ARGUMENT_NODE_TYPE)
     assert args.client, ARGUMENT_ASSERTION_ERROR.format(ARGUMENT_CLIENT)
+    assert args.num_clients, ARGUMENT_ASSERTION_ERROR.format(ARGUMENT_NUM_CLIENTS)
     client_no = args.client
     node_type = args.node_type
     pipelinerun = SpecPipelineRun(args.pipeline_name)
+    num_clients = args.num_clients
     blockPrint()
     # spec_extracted_data = pipelinerun.load_spec_machine_data(client_no, node_type, SPEC_DB_URL)
-    spec_extracted_data = pipelinerun.load_spec_machine_data_grouped(client_no, node_type, SPEC_DB_URL)
+    spec_extracted_data = pipelinerun.load_spec_machine_data_grouped(client_no, node_type, SPEC_DB_URL, num_clients)
     enablePrint()
     # valid_feature_groups = get_valid_feature_group_from_queries(spec_extracted_data.keys())
     client = SpecPowerTrainerClient(spec_extracted_data, args.pipeline_name,

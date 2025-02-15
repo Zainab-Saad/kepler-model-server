@@ -34,3 +34,8 @@ parser.add_argument(
     type=int,
     help="For specpower training; the client number for quick prototyping: TODO (change it to more meaningful argument)"
 )
+parser.add_argument(
+    "--num_clients",
+    type=int,
+    help="For specpower training; number of clients participating in FL training"
+)
