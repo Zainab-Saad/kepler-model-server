@@ -145,7 +145,7 @@ class SpecPipelineRun:
                     node_type_ = self.pipeline.node_collection.index_train_machine(machine_id, spec)
                     if node_type_ != node_type:
                         continue
-                    if client_counter >= (client_no-1)*num_partitions + 1 and client_counter <= num_partitions*client_counter:
+                    if client_counter >= (client_no-1)*num_partitions + 1 and client_counter <= num_partitions*client_no:
                         df[node_info_column] = node_type_
                         # select only needed column
                         spec_extracted_data[machine_id] = df[[TIMESTAMP_COL, node_info_column, acpi_label] + BPF_FEATURES ]
